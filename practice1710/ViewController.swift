@@ -8,6 +8,7 @@ enum MenuListControllerOutputMessage {
 
 final class MenuListViewController: UIViewController {
     
+    
     private let _outputPublisher = PassthroughSubject<MenuListControllerOutputMessage, Never>()
     var outputPublisher: AnyPublisher<MenuListControllerOutputMessage, Never> {
         _outputPublisher.eraseToAnyPublisher()
@@ -68,3 +69,4 @@ extension MenuListViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
 }
+
