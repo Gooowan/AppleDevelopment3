@@ -1,9 +1,3 @@
-//
-//  AppDelegate.swift
-//  practice1710
-//
-//  Created by Ivan Solomatin on 17.10.2024.
-//
 
 import UIKit
 
