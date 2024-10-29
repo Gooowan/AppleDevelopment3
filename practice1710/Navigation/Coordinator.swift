@@ -20,24 +20,22 @@ final class Coordinator {
     }
     
     func start() {
-        let mainViewController = MenuListViewController(drinks: MenuFetcher.shared.fetchMenu())
+        let mainViewController = MenuListViewController()
         
         mainViewController.outputPublisher
             .sink { [weak self] message in
                 switch message {
-                case let .drinkSelected(drink):
-                    self?.showDetailsViewController(with: drink)
+                case let .studentSelected(student):
+                    self?.showDetailsViewController(with: student)
                 }
             }
             .store(in: &cancellable)
         
         rootViewController.pushViewController(mainViewController, animated: true)
     }
-                   
-    func showDetailsViewController(with drink: Drink) {
-        let controller = UIViewController()
-        controller.view.backgroundColor = .red
-        
+
+    func showDetailsViewController(with student: Student) {
+        let controller = ViewDetailsController(student: student)
         rootViewController.pushViewController(controller, animated: true)
     }
 }
