@@ -1,12 +1,29 @@
 import UIKit
 import SnapKit
+import Combine
 
-final class ViewDetailsController: UIViewController {
+enum StudentDetailControllerOutputMessage {
+    case subjectSelected(String)
+}
+
+final class StudentDetailViewController: UIViewController {
 
     private let student: Student
 
     private let scrollView = UIScrollView()
     private let contentView = UIView()
+
+    private let subjectsTableView: UITableView = {
+        let tableView = UITableView()
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SubjectCell")
+        tableView.tableFooterView = UIView()
+        return tableView
+    }()
+
+    private let _outputPublisher = PassthroughSubject<StudentDetailControllerOutputMessage, Never>()
+    var outputPublisher: AnyPublisher<StudentDetailControllerOutputMessage, Never> {
+        _outputPublisher.eraseToAnyPublisher()
+    }
 
     private let photoImageViewShadow: UIView = {
         let view = UIView()
@@ -16,41 +33,36 @@ final class ViewDetailsController: UIViewController {
         view.layer.shadowOffset = CGSize(width: 0, height: 4)
         view.layer.shadowRadius = 4
         view.layer.masksToBounds = false
-        
         return view
-        
     }()
-    
+
     private let photoImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
-        imageView.layer.cornerRadius = 40
+        // Corner radius will be set in viewDidLayoutSubviews
         imageView.clipsToBounds = true
-        
         return imageView
     }()
-    
+
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 40, weight: .bold)
-        
         return label
     }()
-    
+
     private let ageLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18, weight: .thin)
-        
         return label
     }()
-    
+
     private let addressLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18, weight: .thin)
-        
+        label.numberOfLines = 0
         return label
     }()
-    
+
     init(student: Student) {
         self.student = student
         super.init(nibName: nil, bundle: nil)
@@ -66,6 +78,10 @@ final class ViewDetailsController: UIViewController {
     private func setupView() {
         view.backgroundColor = .white
 
+        // Assign delegate and dataSource here
+        subjectsTableView.delegate = self
+        subjectsTableView.dataSource = self
+
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
 
@@ -75,6 +91,7 @@ final class ViewDetailsController: UIViewController {
         contentView.addSubview(nameLabel)
         contentView.addSubview(ageLabel)
         contentView.addSubview(addressLabel)
+        contentView.addSubview(subjectsTableView)
     }
 
     private func setupLayout() {
@@ -110,13 +127,23 @@ final class ViewDetailsController: UIViewController {
         addressLabel.snp.makeConstraints {
             $0.top.equalTo(ageLabel.snp.bottom).offset(8)
             $0.leading.trailing.equalTo(nameLabel)
-            $0.bottom.equalToSuperview().offset(-16)
+        }
+
+        subjectsTableView.snp.makeConstraints { make in
+            make.top.equalTo(addressLabel.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.bottom.equalToSuperview().offset(-16)
+            // Set a minimum height to ensure the table view is displayed
+            make.height.greaterThanOrEqualTo(44 * (student.subjects?.count ?? 1))
         }
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        photoImageView.layer.cornerRadius = photoImageView.frame.height / 2
+    }
 
     private func setupDetails(with student: Student) {
-
         if let imageName = student.imageName, let image = UIImage(named: imageName) {
             photoImageView.image = image
         } else {
@@ -137,5 +164,50 @@ final class ViewDetailsController: UIViewController {
         } else {
             addressLabel.text = "Address: N/A"
         }
+    }
+}
+
+extension StudentDetailViewController: UITableViewDelegate, UITableViewDataSource {
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return student.subjects?.count ?? 0
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+
+        let cell = tableView.dequeueReusableCell(withIdentifier: "SubjectCell", for: indexPath)
+
+        if let subject = student.subjects?[indexPath.row] {
+            cell.textLabel?.text = subject
+
+            if let scores = student.scores, let scoreOptional = scores[subject] {
+                
+                if let scoreValue = scoreOptional {
+                    cell.detailTextLabel?.text = "Grade: \(scoreValue)"
+                } else {
+                    cell.detailTextLabel?.text = "Grade: N/A"
+                }
+                
+            } else {
+                cell.detailTextLabel?.text = "Grade: N/A"
+            }
+        } else {
+            cell.textLabel?.text = "Unknown Subject"
+            cell.detailTextLabel?.text = "Grade: N/A"
+        }
+
+        cell.accessoryType = .disclosureIndicator
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if let subject = student.subjects?[indexPath.row] {
+            _outputPublisher.send(.subjectSelected(subject))
+        }
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }

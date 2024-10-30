@@ -2,14 +2,14 @@ import UIKit
 import SnapKit
 import Combine
 
-enum MenuListControllerOutputMessage {
+enum StudentListControllerOutputMessage {
     case studentSelected(Student)
 }
 
-final class MenuListViewController: UIViewController {
+final class StudentListViewController: UIViewController {
     
-    private let _outputPublisher = PassthroughSubject<MenuListControllerOutputMessage, Never>()
-    var outputPublisher: AnyPublisher<MenuListControllerOutputMessage, Never> {
+    private let _outputPublisher = PassthroughSubject<StudentListControllerOutputMessage, Never>()
+    var outputPublisher: AnyPublisher<StudentListControllerOutputMessage, Never> {
         _outputPublisher.eraseToAnyPublisher()
     }
 
@@ -36,16 +36,24 @@ final class MenuListViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         
+        
+        view.backgroundColor = .white
         view.addSubview(tableView)
         
-        tableView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+        setupLayout()
+    }
+    
+    func setupLayout() {
+        
+        tableView.snp.makeConstraints {
+            $0.edges.equalTo(view.safeAreaLayoutGuide)
         }
+        
     }
 
 }
 
-extension MenuListViewController: UITableViewDelegate, UITableViewDataSource {
+extension StudentListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return students.list.count
