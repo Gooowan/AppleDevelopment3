@@ -18,13 +18,13 @@ final class StudentListViewController: UIViewController {
     @objc private func addStudent() {
         let alertController = UIAlertController(title: "Add Student", message: nil, preferredStyle: .alert)
         
-        alertController.addTextField { textField in
-            textField.placeholder = "Name"
+        alertController.addTextField {
+            $0.placeholder = "Name"
         }
         
-        alertController.addTextField { textField in
-            textField.placeholder = "Age"
-            textField.keyboardType = .numberPad
+        alertController.addTextField {
+            $0.placeholder = "Age"
+            $0.keyboardType = .numberPad
         }
         
         let addAction = UIAlertAction(title: "Add", style: .default) { [weak self] _ in
@@ -33,9 +33,8 @@ final class StudentListViewController: UIViewController {
             let ageField = alertController.textFields?[1]
             
             guard let name = nameField?.text, !name.isEmpty,
-                  let ageText = ageField?.text, let age = Int(ageText) else {
-                return
-            }
+                  let ageText = ageField?.text, let age = Int(ageText) else { return }
+            
             
             let newStudent = Student(id: self.students.list.count + 1, name: name, age: age, subjects: [], address: nil, scores: nil, hasScholarship: false, graduationYear: nil, imageName: nil)
             
@@ -48,8 +47,10 @@ final class StudentListViewController: UIViewController {
         alertController.addAction(cancelAction)
         alertController.addAction(addAction)
         
-        present(alertController, animated: true, completion: nil)
+        self.present(alertController, animated: true, completion: nil)
+
     }
+
 
     
     let tableView: UITableView = {
@@ -80,6 +81,12 @@ final class StudentListViewController: UIViewController {
         setupLayout()
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addStudent))
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tableView.reloadData()
+    }
+
     
     func setupLayout() {
         

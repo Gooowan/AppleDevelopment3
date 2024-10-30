@@ -73,6 +73,15 @@ final class StudentDetailViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        photoImageView.layer.cornerRadius = 30
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editStudent))
+    }
+    
+    
     private func setupView() {
         view.backgroundColor = .white
 
@@ -133,10 +142,9 @@ final class StudentDetailViewController: UIViewController {
             make.height.greaterThanOrEqualTo(44 * (student.subjects?.count ?? 1))
         }
     }
-
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        photoImageView.layer.cornerRadius = photoImageView.frame.height / 2
     }
 
     private func setupDetails(with student: Student) {
@@ -160,7 +168,47 @@ final class StudentDetailViewController: UIViewController {
         } else {
             addressLabel.text = "Address: N/A"
         }
+
+        subjectsTableView.reloadData()
     }
+
+    @objc private func editStudent() {
+        let alertController = UIAlertController(title: "Edit Student", message: nil, preferredStyle: .alert)
+
+        alertController.addTextField { textField in
+            textField.placeholder = "Name"
+            textField.text = self.student.name
+        }
+
+        alertController.addTextField { textField in
+            textField.placeholder = "Age"
+            textField.keyboardType = .numberPad
+            textField.text = self.student.age != nil ? "\(self.student.age!)" : ""
+        }
+
+        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            let nameField = alertController.textFields?[0]
+            let ageField = alertController.textFields?[1]
+
+            guard let name = nameField?.text, !name.isEmpty,
+                  let ageText = ageField?.text, let age = Int(ageText) else {
+                return
+            }
+
+            self.student.name = name
+            self.student.age = age
+            self.setupDetails(with: self.student)
+        }
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+
+        alertController.addAction(cancelAction)
+        alertController.addAction(saveAction)
+
+        self.present(alertController, animated: true, completion: nil)
+    }
+
 }
 
 extension StudentDetailViewController: UITableViewDelegate, UITableViewDataSource {
@@ -198,8 +246,6 @@ extension StudentDetailViewController: UITableViewDelegate, UITableViewDataSourc
         cell.accessoryType = .disclosureIndicator
         return cell
     }
-
-
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let subject = student.subjects?[indexPath.row] {

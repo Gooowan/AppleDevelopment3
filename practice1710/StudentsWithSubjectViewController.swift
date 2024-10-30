@@ -55,13 +55,4 @@ extension StudentsWithSubjectViewController: UITableViewDelegate, UITableViewDat
         return 100
     }
 
-
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        
-//        let selectedStudent = students[indexPath.row]
-//        let detailVC = StudentDetailViewController(student: selectedStudent)
-//        
-//        navigationController?.pushViewController(detailVC, animated: true)
-//        tableView.deselectRow(at: indexPath, animated: true)
-//    }
 }
