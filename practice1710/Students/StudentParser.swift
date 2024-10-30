@@ -6,16 +6,36 @@ struct Address: Codable {
     let postalCode: String?
 }
 
-struct Student: Codable {
+class Student: Codable {
     let id: Int
-    let name: String?
-    let age: Int?
+    var name: String?
+    var age: Int?
     var imageName: String?
-    let subjects: [String]?
-    let address: Address?
-    let scores: [String: Int?]?
-    let hasScholarship: Bool?
-    let graduationYear: Int?
+    var subjects: [String]?
+    var address: Address?
+    var scores: [String: Int?]?
+    var hasScholarship: Bool?
+    var graduationYear: Int?
+    
+    init(id: Int,
+             name: String?,
+             age: Int?,
+             subjects: [String]?,
+             address: Address?,
+             scores: [String: Int?]?,
+             hasScholarship: Bool?,
+             graduationYear: Int?,
+             imageName: String?) {
+            self.id = id
+            self.name = name
+            self.age = age
+            self.subjects = subjects
+            self.address = address
+            self.scores = scores
+            self.hasScholarship = hasScholarship
+            self.graduationYear = graduationYear
+            self.imageName = imageName
+        }
     
     var averageScore: Double? {
             guard let scores = scores else { return nil }

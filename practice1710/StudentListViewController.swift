@@ -15,6 +15,43 @@ final class StudentListViewController: UIViewController {
 
     let students: Students
     
+    @objc private func addStudent() {
+        let alertController = UIAlertController(title: "Add Student", message: nil, preferredStyle: .alert)
+        
+        alertController.addTextField { textField in
+            textField.placeholder = "Name"
+        }
+        
+        alertController.addTextField { textField in
+            textField.placeholder = "Age"
+            textField.keyboardType = .numberPad
+        }
+        
+        let addAction = UIAlertAction(title: "Add", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            let nameField = alertController.textFields?[0]
+            let ageField = alertController.textFields?[1]
+            
+            guard let name = nameField?.text, !name.isEmpty,
+                  let ageText = ageField?.text, let age = Int(ageText) else {
+                return
+            }
+            
+            let newStudent = Student(id: self.students.list.count + 1, name: name, age: age, subjects: [], address: nil, scores: nil, hasScholarship: false, graduationYear: nil, imageName: nil)
+            
+            self.students.list.append(newStudent)
+            self.tableView.reloadData()
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        alertController.addAction(cancelAction)
+        alertController.addAction(addAction)
+        
+        present(alertController, animated: true, completion: nil)
+    }
+
+    
     let tableView: UITableView = {
         let tableView = UITableView()
         tableView.register(StudentCell.self, forCellReuseIdentifier: StudentCell.identifier)
@@ -41,6 +78,7 @@ final class StudentListViewController: UIViewController {
         view.addSubview(tableView)
         
         setupLayout()
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addStudent))
     }
     
     func setupLayout() {
@@ -73,6 +111,17 @@ extension StudentListViewController: UITableViewDelegate, UITableViewDataSource 
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         _outputPublisher.send(.studentSelected(students.list[indexPath.row]))
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+            return true
+        }
+        
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            students.list.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
     }
     
 }
