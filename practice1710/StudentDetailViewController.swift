@@ -15,7 +15,6 @@ final class StudentDetailViewController: UIViewController {
 
     private let subjectsTableView: UITableView = {
         let tableView = UITableView()
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SubjectCell")
         tableView.tableFooterView = UIView()
         return tableView
     }()
@@ -39,7 +38,6 @@ final class StudentDetailViewController: UIViewController {
     private let photoImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
-        // Corner radius will be set in viewDidLayoutSubviews
         imageView.clipsToBounds = true
         return imageView
     }()
@@ -78,7 +76,6 @@ final class StudentDetailViewController: UIViewController {
     private func setupView() {
         view.backgroundColor = .white
 
-        // Assign delegate and dataSource here
         subjectsTableView.delegate = self
         subjectsTableView.dataSource = self
 
@@ -133,7 +130,6 @@ final class StudentDetailViewController: UIViewController {
             make.top.equalTo(addressLabel.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview().inset(16)
             make.bottom.equalToSuperview().offset(-16)
-            // Set a minimum height to ensure the table view is displayed
             make.height.greaterThanOrEqualTo(44 * (student.subjects?.count ?? 1))
         }
     }
@@ -179,30 +175,31 @@ extension StudentDetailViewController: UITableViewDelegate, UITableViewDataSourc
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-        let cell = tableView.dequeueReusableCell(withIdentifier: "SubjectCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "SubjectCell") ?? UITableViewCell(style: .default, reuseIdentifier: "SubjectCell")
 
         if let subject = student.subjects?[indexPath.row] {
-            cell.textLabel?.text = subject
+            var text = subject
 
             if let scores = student.scores, let scoreOptional = scores[subject] {
-                
                 if let scoreValue = scoreOptional {
-                    cell.detailTextLabel?.text = "Grade: \(scoreValue)"
+                    text += ": \(scoreValue)"
                 } else {
-                    cell.detailTextLabel?.text = "Grade: N/A"
+                    text += ": N/A"
                 }
-                
             } else {
-                cell.detailTextLabel?.text = "Grade: N/A"
+                text += ": N/A"
             }
+
+            cell.textLabel?.text = text
         } else {
             cell.textLabel?.text = "Unknown Subject"
-            cell.detailTextLabel?.text = "Grade: N/A"
         }
 
         cell.accessoryType = .disclosureIndicator
         return cell
     }
+
+
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let subject = student.subjects?[indexPath.row] {
